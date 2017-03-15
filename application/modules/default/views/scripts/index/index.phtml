@@ -1,0 +1,37 @@
+<h1>Danh sách server</h1>
+<a href="#add" class="pull-right" id="add_object">+ Thêm server</a>
+<div class="row"></div>
+
+<?php echo $this->partial("layout/search.phtml", array('fields' => array('name' => 'Tên server', 'ip_address' => 'Địa chỉ Ip', 'status' => array('type' => 'select', 'option' => array('' => 'Trạng thái', 'Running' => 'Running', 'Stopped' => 'Stopped', 'Not connect' => 'Not Connect'))))); ?>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Tên</th>
+            <th>IP</th>
+            <th>User name</th>
+            <th>Password</th>
+            <th>Trạng thái</th>
+            <th>Thư mục gốc</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        <?php echo $this->partial("index/info.phtml", array('order' => 0, 'server' => array(), 'class' => 'info-pattern')); ?>
+    </thead>
+    <tbody>
+        <?php
+        $order = 1;
+        foreach ($this->servers as $server) {
+            echo $this->partial("index/info.phtml", array('order' => $order, 'server' => $server));
+            $order++;
+        }
+        ?>
+    </tbody>
+</table>
+<?php
+echo $this->partial("layout/modal_info.phtml", array('title' => 'Thêm server',
+    'fields' => array('Tên' => 'name', 'Địa chỉ IP' => 'ip_address', 'Tên đăng nhâp' => 'username', 'Mật khẩu' => 'password', 'Thư mục cài đặt'=>'dir_base'),
+    'controller_name' => 'index'));
+echo $this->partial("layout/modal_remove.phtml", array('title' => 'Xóa server',));
+echo $this->partial("index/modal_control.phtml", array('title' => 'Khởi động server',));

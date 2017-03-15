@@ -1,0 +1,32 @@
+<h1>Danh sách người dùng</h1>
+<a href="#add" class="pull-right" id="add_object">+ Thêm người dùng</a>
+<div class="row"></div>
+
+<?php echo $this->partial("layout/search.phtml", array('fields' => array('name' => 'Tên', 'email' => 'Email'))); ?>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Tên</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+        <?php echo $this->partial("user/info.phtml", array('order' => 0, 'user' => array(), 'class' => 'info-pattern'));
+        ?>
+    </thead>
+    <tbody>
+        <?php
+        $order = 1;
+
+        foreach ($this->users as $user) {
+            echo $this->partial("user/info.phtml", array('order' => $order, 'user' => $user));
+            $order++;
+        }
+        ?>
+    </tbody>
+</table>
+<?php
+echo $this->partial("layout/modal_info.phtml", array('title' => 'Thêm người dùng',
+    'fields' => array('Tên' => 'name', 'Email' => 'email', 'reset_password'=>array('type'=>'checkbox','option'=>'Reset password', 'class'=>'only-edit')),
+    'controller_name' => 'user'));
+echo $this->partial("layout/modal_remove.phtml", array('title' => 'Xóa người dùng',));

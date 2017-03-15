@@ -1,0 +1,4 @@
+HCM	/	/Hồ Chí Minh
+HN	/	/Hà Nội
+ĐN	/	/Đà Nẵng
+TP	/	/Thành Phố

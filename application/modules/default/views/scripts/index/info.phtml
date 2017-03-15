@@ -1,0 +1,13 @@
+<tr id="index-<?php echo $this->server['id']; ?>" class="<?php echo $this->class; ?>">
+    <td class="order"><?php echo $this->order; ?></td>
+    <td class="id"><?php echo $this->server['id']; ?></td>
+    <td class="name title"><?php echo $this->server['name']; ?></td>
+    <td class="ip_address"><?php echo $this->server['ip_address']; ?></td>
+    <td class="username"><?php echo $this->server['username']; ?></td>
+    <td class="password"><?php echo $this->server['password']; ?></td>
+    <td class="status"><?php echo $this->server['status']; ?></td>
+    <td class="dir_base"><?php echo $this->server['dir_base']; ?></td>
+    <td class="control"><button class="btn btn-success btn-xs start" type="button">Start</button><button class="btn btn-danger btn-xs stop" type="button">Stop</button></td>
+    <td class="restart"><button class="btn btn-primary btn-xs restart" type="button">Restart</button></td>
+    <td><a href="#edit" class="edit_object">Edit</a> <a href="#remove" class="remove_object">Remove</a></td>
+</tr>

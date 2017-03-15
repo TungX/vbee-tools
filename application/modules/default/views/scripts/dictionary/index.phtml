@@ -1,0 +1,38 @@
+<h1 id="type-action" data-type-name="<?php echo $this->type_name; ?>">
+    Từ điển <?php echo $this->dic_name; ?>
+    <button class="btn btn-success pull-right" id="synchronize">Đồng bộ</button>
+</h1>
+
+<a href="#add" class="pull-right" id="add_object">+ Thêm <?php echo $this->dic_name; ?></a>
+<div class="row"></div>
+
+<?php echo $this->partial("layout/search.phtml", array('fields' => array('word' => 'Từ '.$this->dic_name, 'spelling' => 'Cách đọc', 'type'=>array('type'=>'hidden', 'option'=>$this->type)))); ?>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Từ <?php echo $this->dic_name; ?></th>
+            <th>Cách đọc</th>
+            <th></th>
+        </tr>
+        <?php echo $this->partial("dictionary/info.phtml", array('order' => 0, 'dictionary' => array(), 'class' => 'info-pattern')); ?>
+    </thead>
+    <tbody>
+        <?php
+        $order = 1;
+        foreach ($this->dictionary as $word) {
+            echo $this->partial("dictionary/info.phtml", array('order' => $order, 'dictionary' => $word));
+            $order++;
+        }
+        ?>
+    </tbody>
+</table>
+
+
+<?php
+echo $this->partial("layout/process_syn.phtml");
+echo $this->partial("layout/modal_info.phtml", array('title' => 'Thêm từ '.$this->dic_name,
+    'fields' => array('Từ '.$this->dic_name => 'word', 'Cách đọc' => 'spelling', 'type'=>array('type'=>'hidden', 'option'=>$this->type)),
+    'controller_name' => 'dictionary'));
+echo $this->partial("layout/modal_remove.phtml", array('title' => 'Xóa từ '.$this->dic_name,));
+echo $this->partial("dictionary/modal_control.phtml", array('title' => 'đồng bộ từ điển '.$this->dic_name,));
