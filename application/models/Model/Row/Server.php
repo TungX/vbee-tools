@@ -71,11 +71,34 @@ class Model_Row_Server extends Zend_Db_Table_Row_Abstract {
             }
         }
     }
+    
+    public function synchronizeSoftwares($softwares, $action, $restart = 0) {
+        $number_software_complete = 0;
+        foreach ($softwares as $softwares) {
+            if ($this->synchronizeSoftware($softwares['name'], $action)) {
+                $number_software_complete++;
+            }
+            if ($number_software_complete == count($softwares)) {
+                $this->_serverSyn->status = 2;
+                $this->_serverSyn->save();
+                if ($restart == 1) {
+                    $this->restart();
+                }
+            } else {
+                $this->_serverSyn->status = 0;
+                $this->_serverSyn->save();
+            }
+        }
+    }
+    
+    private function synchronizeSoftware($fileName, $action) {
+        $filePath = 'uploads/softwares/'.$fileName;
+        $result = exec("java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base $action $filePath $fileName");
+        return $result != "Not ok";
+    }
 
     private function synchronizeVoice($fileName, $action) {
         $filePath = 'uploads/voices/'.$fileName;
-//        $command = "java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base $action $filePath $fileName";
-//        echo $command;
         $result = exec("java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base $action $filePath $fileName");
         return $result != "Not ok";
     }

@@ -16,6 +16,7 @@
             <li><a href="/voice?type=install" class="install">Install </a></li>
             <li><a href="/voice?type=uninstall" class="uninstall">Uninstall</a></li>
         </ul>
+        <li><a href="/update" class="update">Update</a></li>
     </li>
     <li><a href="/user/logout">Đăng xuất</a></li>
 <?php endif; ?>
