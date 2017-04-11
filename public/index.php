@@ -15,15 +15,13 @@ define('TEMPLATE_URL', "/templates");
 //Duong dan den thu muc /library
 defined('LIBRARY_PATH')
     || define('LIBRARY_PATH', realpath(dirname(__FILE__) . '/../library'));
-
 // Ensure library/ is on include_path, them cac duong dan den cac file model de Zend co the load
 set_include_path(implode(PATH_SEPARATOR, array(
     realpath('../library'),
     realpath(APPLICATION_PATH . '/models'),
     get_include_path(),
 )));
-
-
+require_once('YinX/InitDatabase.php');
 /** Zend Application */
 require_once('Zend/Application.php');
 

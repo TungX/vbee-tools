@@ -14,16 +14,19 @@
 class Model_Mail {
 
     private $config = array(
-        'host' => 'smtp.gmail.com',
         'port' => 587,
         'ssl' => 'tls',
         'auth' => 'login',
-        'username' => 'blue.rose.hut@gmail.com',
-        'password' => 'iamSmt193',
+        'username' => '',
+        'password' => '',
     );
 
     public function sendEmail($email, $subject, $content) {
-        $transport = new Zend_Mail_Transport_Smtp('smtp.gmail.com', $this->config);
+        $mail_config = parse_ini_file(APPLICATION_PATH . '/configs/mail.ini');
+        foreach ($this->config as $key => $value) {
+            $this->config[$key] = $mail_config["mail.".$key];
+        }
+        $transport = new Zend_Mail_Transport_Smtp($mail_config["mail.host"], $this->config);
         $mail = new Zend_Mail();
         $mail->setBodyHtml($content);
         $mail->setFrom($this->config['username'], 'Vbee Gateway');

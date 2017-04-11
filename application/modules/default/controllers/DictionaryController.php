@@ -31,6 +31,11 @@ class DictionaryController extends Amobi_Controller_Action {
     public function createAction() {
         $this->_helper->layout()->disableLayout();
         $param = $this->_arrParam;
+        if (array_key_exists("spelling", $param) && $param['type'] == 1) {
+            if (!$this->checkSpelling($param['spelling'])) {
+                return $this->view->result = json_encode(array('status' => 2, 'message' => "Cách đọc khai sao sai, bạn có thể tham khảo ở <a href='/'>đây</a>"));
+            }
+        }
         $param['id'] = null;
         $id = $this->_model->save($param);
         if ($id == -1) {
@@ -43,6 +48,11 @@ class DictionaryController extends Amobi_Controller_Action {
     public function updateAction() {
         $this->_helper->layout()->disableLayout();
         $param = $this->_arrParam;
+        if (array_key_exists("spelling", $param) && $param['type'] == 1) {
+            if (!$this->checkSpelling($param['spelling'])) {
+                return $this->view->result = json_encode(array('status' => 2, 'message' => "Cách đọc khai sao sai, bạn có thể tham khảo ở <a href='/'>đây</a>"));
+            }
+        }
         $id = $this->_model->save($param);
         if ($id == -1) {
             $this->view->result = json_encode(array('status' => 2, 'message' => 'Lỗi trong quá trình lưu'));
@@ -82,6 +92,26 @@ class DictionaryController extends Amobi_Controller_Action {
         }
     }
 
+    public function createPhoneticsAction() {
+        $this->_helper->layout()->disableLayout();
+        Zend_Loader::loadClass('Model_G2Phonetic');
+        $g2pModel = new Model_G2Phonetic();
+        $row_count = $g2pModel->getAdapter()->fetchRow("select count(*) as count from phonetics");
+        if ($row_count['count'] <= 0) {
+            $dictionary_phone = $this->readFilePhonetic();
+            foreach ($dictionary_phone as $word => $phonetic) {
+                if (empty($word)) {
+                    continue;
+                }
+                $id = $g2pModel->save(array('word' => $word, 'phonetic' => $phonetic));
+                if ($id < 1) {
+                    echo $word . '<br>';
+                }
+            }
+        }
+        $this->view->result = "complete";
+    }
+
     public function synchronizeAction() {
         $this->_helper->layout()->disableLayout();
         Zend_Loader::loadClass('Model_Server');
@@ -106,6 +136,26 @@ class DictionaryController extends Amobi_Controller_Action {
         $this->view->result = json_encode($result);
     }
 
+    private function checkSpelling($spelling) {
+        Zend_Loader::loadClass('Model_G2Phonetic');
+        $g2pModel = new Model_G2Phonetic();
+        $phones = preg_split("/(\s|-)+/", $spelling);
+        foreach ($phones as $phone) {
+            $spell = "";
+            $phonetics = $g2pModel->fetchAll("word = '" . mb_strtolower($phone, 'UTF-8') . "'");
+            foreach ($phonetics as $tphonetic) {
+                if ($tphonetic['word'] == mb_strtolower($phone, 'UTF-8')) {
+                    $spell = $tphonetic['phonetic'];
+                    break;
+                }
+            }
+            if (strlen($spell) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private function readFilePhonetic() {
         $dictionary_phone = array();
         if (($file = fopen("g2p_loan_phonetic.txt", "r"))) {
@@ -126,11 +176,12 @@ class DictionaryController extends Amobi_Controller_Action {
             $file = fopen($this->_dic_file[$this->_type], "w");
             $dictionary = $this->_model->fetchAll("type = '" . $this->_type . "'");
             $function_make_line = $this->_make_line[$this->_type];
-            if ($this->_type == 1) {
-                $dictionary_phone = $this->readFilePhonetic();
-            }
+            Zend_Loader::loadClass('Model_G2Phonetic');
+            $g2pModel = new Model_G2Phonetic();
             foreach ($dictionary as $line) {
-                fwrite($file, $this->$function_make_line($line['word'], $line['spelling'], $dictionary_phone));
+                $tline = $this->$function_make_line($line['word'], $line['spelling'], $g2pModel);
+                echo $tline;
+                fwrite($file, $tline);
             }
             fclose($file);
         } catch (Exception $e) {
@@ -144,18 +195,24 @@ class DictionaryController extends Amobi_Controller_Action {
         return $word . "\t/\t/" . $spelling . "\n";
     }
 
-    private function makeLoanLine($word, $spelling, $dictionary_phone) {
+    private function makeLoanLine($word, $spelling, $g2pModel) {
         $phones = preg_split("/(\s|-)+/", $spelling);
         $phonetic_arr = array();
         foreach ($phones as $phone) {
-            $spell = $dictionary_phone[strtolower($phone)];
+            $phonetics = $g2pModel->fetchAll("word = '" . mb_strtolower($phone, 'UTF-8') . "'");
+            $spell = "";
+            foreach ($phonetics as $tphonetic) {
+                if ($tphonetic['word'] == mb_strtolower($phone, 'UTF-8')) {
+                    $spell = $tphonetic['phonetic'];
+                }
+            }
             if (strlen($spell) > 0) {
                 array_push($phonetic_arr, $spell);
             }
         }
         $phonetic = implode(" - ", $phonetic_arr);
         $phonetic = trim(preg_replace("/\s+/", " ", $phonetic));
-        return  "$word / $spelling [$phonetic]\n";
+        return "$word / $spelling [$phonetic]\n";
     }
 
 }

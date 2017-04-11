@@ -5,6 +5,10 @@
  */
 var $action;
 $(document).ready(function () {
+    $.ajax({
+        url: "/dictionary/create-phonetics",
+        method: 'POST'
+    });
     $('.active').removeClass('active');
     $('li .' + $('.wrap-content').data('controller')).addClass('active');
     init();
@@ -89,7 +93,6 @@ function catchEventChangeField() {
 }
 function catchEventSaveObject() {
     $('.save_object').on('click', function () {
-        console.log('save obhect');
         var $data = new Object();
         var hasFieldEmpty = false;
         $('#modal_info .modal-body input').each(function () {
@@ -124,6 +127,7 @@ function catchEventSaveObject() {
             var result = JSON.parse(data);
             if (result.status === 2) {
                 $('#modal_info .error-notifice').html(result.message);
+                catchEventChangeField();
                 return;
             }
             if ($action === 'create') {
@@ -200,5 +204,4 @@ function catchEventSearch() {
             $('#search').prop('disabled', false);
         });
     });
-
 }
