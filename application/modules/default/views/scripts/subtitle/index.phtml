@@ -1,0 +1,51 @@
+<h1 id="type-action" data-type-name="<?php echo $this->type_name; ?>">
+    Danh sách thuyết minh
+</h1>
+
+<a href="#add" class="pull-right" id="add_object">+ Thêm file thuyết minh</a>
+<div class="row"></div>
+<?php if ($this->error_message): ?>
+    <div class="alert alert-danger">
+        <strong>Error!</strong> <?php echo $this->error_message; ?>
+    </div>
+<?php endif; ?>
+
+<?php echo $this->partial("layout/search.phtml", array('fields' => array('name' => 'Tên'))); ?>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Request ID</th>
+            <th>Tên</th>
+            <th>Trạng thái</th>
+            <th>Voice name</th>
+            <th>Server</th>
+            <th>Ngày tạo</th>
+            <th></th>
+        </tr>
+        <?php echo $this->partial("subtitle/info.phtml", array('order' => 0, 'subtitle' => array(), 'class' => 'info-pattern')); ?>
+    </thead>
+    <tbody>
+        <?php
+        $order = 1;
+        foreach ($this->subtitles as $order => $subtitle) {
+            echo $this->partial("subtitle/info.phtml", array('order' => $order + 1, 'subtitle' => $subtitle));
+        }
+        ?>
+    </tbody>
+</table>
+<?php
+echo $this->partial("layout/modal_info.phtml", array('title' => 'Thêm file thuyết minh ',
+    'action' => '/subtitle/',
+    'fields' => array(
+        'request_id' => array('type' => 'text_disabled', 'option' => 'Request ID'),
+        'Tên phim' => 'name',
+        'subtitle_server' => array('type' => 'text', 'option' => 'Server', 'default' => 'localhost:2110'),
+        'voice_name' => array('type' => 'text', 'option' => 'Voice', 'default' => 'female_tt_vdts_48k-hsmm'),
+        'Callback' => 'callback',
+        'subtitle_path' => array('type' => 'fileUpload', 'option' => 'File thuyết minh')
+    ),
+    'controller_name' => 'subtitle'));
+echo $this->partial("layout/modal_remove.phtml", array('title' => 'Xóa thuyết minh '));
+echo $this->partial("index/modal_control.phtml", array('title' => 'Tổng hợp file ',));
+?>

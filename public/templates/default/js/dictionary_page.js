@@ -6,9 +6,10 @@
 var $progressing = false;
 $(document).ready(function () {
     $('.type-action .active').removeClass('active');
-    $('li .' + $('#type-action').data('type-name')).addClass('active');
-    $('#modal_control').on('hidden.bs.modal',function (){
-        if(!$progressing){
+    if ($('#type-action').data('type-name').length > 0)
+        $('li .' + $('#type-action').data('type-name')).addClass('active');
+    $('#modal_control').on('hidden.bs.modal', function () {
+        if (!$progressing) {
             $('#synchronize').prop('disabled', false);
         }
     });
@@ -18,6 +19,13 @@ var $server_lengths = 0;
 var $server_checked = new Object();
 function catchEventSynchronize() {
     $('#synchronize').on('click', function () {
+        if ($('.synchronize_selected').length > 0 && $('.synchronize_selected:checked').length == 0) {
+            $('#modal_control .error-notifice').text("bạn cần lựa chọn phần để đồng bộ");
+            $('#modal_control .action').prop('disabled', true);
+        } else {
+            $('#modal_control .error-notifice').text("");
+            $('#modal_control .action').prop('disabled', false);
+        }
         $('#modal_control').modal('show');
         $('#synchronize').prop('disabled', true);
     });
@@ -30,6 +38,7 @@ function catchEventRequestSynchronize() {
             url: $('#modal_info').data('controller-name') + '/beforesynchronize?type=' + $('#type-action').data('type-name'),
             method: 'POST'
         }).done(function (data) {
+            console.log(data);
             result = JSON.parse(data);
             if (result.status === 1) {
                 $servers = result.servers;
@@ -44,10 +53,20 @@ function catchEventRequestSynchronize() {
     });
 }
 function synchronize() {
+    var id = -1;
+    if ($('.synchronize_selected').length > 0) {
+        id = +$('.synchronize_selected:checked').val();
+        
+    }
     $.ajax({
-        url: $('#modal_info').data('controller-name') + '/synchronize?type=' + $('#type-action').data('type-name')+'&restart='+ +$(':input[name=restart]').is(':checked'),
+        url: $('#modal_info').data('controller-name')
+                + '/synchronize?type=' + $('#type-action').data('type-name')
+                + '&restart=' + +$(':input[name=restart]').is(':checked') + '&id=' + id,
         method: 'POST'
+    }).done(function (data) {
+        console.log(data);
     });
+    ;
 }
 
 function checkSynchronize() {
@@ -79,7 +98,7 @@ function checkSynchronize() {
     });
 }
 
-function initSynchronize(){
+function initSynchronize() {
     $('.progress-syn, .syn-result').css('display', 'block');
     $('.progress-syn .progress-bar').css('width', '0%').html('');
     $('.syn-result').html('');

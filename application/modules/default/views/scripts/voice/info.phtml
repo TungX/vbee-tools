@@ -1,5 +1,6 @@
 <tr id="voice-<?php echo $this->voice['id']; ?>" class="<?php echo $this->class; ?>">
     <td class="order"><?php echo $this->order; ?></td>
+    <td><input type="checkbox" class="synchronize_selected" name="voice_update" value="<?php echo $this->voice['id']; ?>"></td>
     <td class="id"><?php echo $this->voice['id']; ?></td>
     <td class="name title"><?php echo $this->voice['name']; ?></td>
     <td><a href="#edit" class="edit_object">Edit</a> <a href="#remove" class="remove_object">Remove</a></td>

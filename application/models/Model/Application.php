@@ -17,13 +17,15 @@ class Model_Application extends Zend_Db_Table_Abstract {
 
     public function save($param) {
         try {
+            if(!isset($param['id'])){
+                $param['id'] = null;
+            }
             if (null === ($id = $param['id'])) {
                 unset($param['id']);
                 return $this->insert($param);
             }
             return $this->update($param, array('id = ?' => $id));
         } catch (Exception $e) {
-            echo $e->getMessage();
             return -1;
         }
     }

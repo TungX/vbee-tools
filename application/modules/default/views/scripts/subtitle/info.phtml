@@ -1,0 +1,26 @@
+<?php
+$status = array(
+    array('name' => 'pending', 'lable' => 'label-warning'),
+    array('name' => 'complete', 'lable' => 'label-success'),
+    array('name' => 'error', 'lable' => 'label-danger')
+        )
+?>
+<tr id="subtitle-<?php echo $this->subtitle['id']; ?>" class="<?php echo $this->class; ?>" data-status="<?php echo $this->subtitle['status'] ?>">
+    <td class="order"><?php echo $this->order; ?></td>
+    <td class="id"><?php echo $this->subtitle['id']; ?></td>
+    <td class="request_id"><?php echo $this->subtitle['request_id']; ?></td>
+    <td class="name title">
+        <?php if ($this->subtitle['audio_path']): ?>
+            <a href="<?php echo $this->subtitle['audio_path']; ?>" target="_blank"><?php echo $this->subtitle['name']; ?></a>
+        <?php else : ?>
+            <?php echo $this->subtitle['name']; ?>
+        <?php endif; ?>
+    </td>
+    
+    <td class="callback non-display"><?php echo $this->subtitle['callback']; ?></td>
+    <td class="status"><label class="label <?php echo $status[$this->subtitle['status']]['lable'] ?>"><?php echo $status[$this->subtitle['status']]['name'] ?></label></td>
+    <td class="voice_name"><?php echo $this->subtitle['voice_name']; ?></td>
+    <td class="subtitle_server"><?php echo $this->subtitle['subtitle_server']; ?></td>
+    <td class="time_create"><?php echo date('d/m/Y', strtotime($this->subtitle['time_create'])); ?></td>
+    <td><?php if($this->subtitle['status'] != 0):?><a href="#synthesize" class="synthesize">Synthesize</a><?php endif;?> <a href="#edit" class="edit_subtitle">Edit</a> <a href="#remove" class="remove_object">Remove</a></td>
+</tr>

@@ -29,13 +29,17 @@ class IndexController extends Amobi_Controller_Action {
         $this->_helper->layout()->disableLayout();
         $param = $this->_arrParam;
         $param['id'] = null;
-        $this->view->result = json_encode(array('status' => 1, 'id' => $this->_model->save($param)));
+//        $this->view->result = json_encode(array('status' => 1, 'id' => $this->_model->save($param)));
+        $this->_helper->redirector('index', 'index', 'default', array());
     }
 
     public function updateAction() {
         $this->_helper->layout()->disableLayout();
 
         $param = $this->_arrParam;
+        if (isset($param['password']) && empty($param['password'])) {
+            unset($param['password']);
+        }
         if (array_key_exists("manager_action", $param)) {
             $server = $this->_model->find($param['id']);
             if (count($server) > 0) {
@@ -45,7 +49,8 @@ class IndexController extends Amobi_Controller_Action {
                 $this->view->result = json_encode(array('status' => 2, 'message' => 'Server is not exist!'));
             }
         } else {
-            $this->view->result = json_encode(array('status' => 1, 'id' => $this->_model->save($param)));
+//            $this->view->result = json_encode(array('status' => 1, 'id' => $this->_model->save($param)));
+            $this->_helper->redirector('index', 'index', 'default', array());
         }
     }
 
