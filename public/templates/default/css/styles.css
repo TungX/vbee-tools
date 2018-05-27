@@ -107,3 +107,7 @@ td.id {
 .syn-result, .progress-syn{
     display: none;
 }
+
+td.non-display {
+    display: none;
+}

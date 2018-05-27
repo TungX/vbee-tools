@@ -16,7 +16,8 @@ class Model_Row_Server extends Zend_Db_Table_Row_Abstract {
     private $_serverSyn;
 
     public function checkStatus() {
-        $result = exec("java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base check");
+        $command = "java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base check";
+        $result = exec($command);
         return strlen($result) > 0 ? $result : 'Not connect';
     }
 
@@ -36,6 +37,7 @@ class Model_Row_Server extends Zend_Db_Table_Row_Abstract {
     }
 
     public function synchronizeDictionary($fileName, $restart = 0) {
+        set_time_limit(100);
         $action = "update-dictionary";
         $filePath = $fileName;
         $result = exec("java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base $action $filePath $fileName");
@@ -53,13 +55,19 @@ class Model_Row_Server extends Zend_Db_Table_Row_Abstract {
     }
 
     public function synchronizeVoices($voices, $action, $restart = 0) {
+        set_time_limit(100);
         $number_voice_complete = 0;
         $action = $action . '-voice';
+        if (count($voices) == 0) {
+            $this->_serverSyn->status = 0;
+            $this->_serverSyn->save();
+        }
+
         foreach ($voices as $voice) {
             if ($this->synchronizeVoice($voice['name'], $action)) {
                 $number_voice_complete++;
             }
-            if ($number_voice_complete == count($voices)) {
+            if ($number_voice_complete >= count($voices)) {
                 $this->_serverSyn->status = 2;
                 $this->_serverSyn->save();
                 if ($restart == 1) {
@@ -71,14 +79,19 @@ class Model_Row_Server extends Zend_Db_Table_Row_Abstract {
             }
         }
     }
-    
+
     public function synchronizeSoftwares($softwares, $action, $restart = 0) {
+        set_time_limit(200);
         $number_software_complete = 0;
-        foreach ($softwares as $softwares) {
-            if ($this->synchronizeSoftware($softwares['name'], $action)) {
+        if (count($softwares) == 0) {
+            $this->_serverSyn->status = 0;
+            $this->_serverSyn->save();
+        }
+        foreach ($softwares as $software) {
+            if ($this->synchronizeSoftware($software['name'], $action)) {
                 $number_software_complete++;
             }
-            if ($number_software_complete == count($softwares)) {
+            if ($number_software_complete >= count($softwares)) {
                 $this->_serverSyn->status = 2;
                 $this->_serverSyn->save();
                 if ($restart == 1) {
@@ -90,16 +103,18 @@ class Model_Row_Server extends Zend_Db_Table_Row_Abstract {
             }
         }
     }
-    
+
     private function synchronizeSoftware($fileName, $action) {
-        $filePath = 'uploads/softwares/'.$fileName;
-        $result = exec("java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base $action $filePath $fileName");
+        $filePath = 'uploads/softwares/' . $fileName;
+        $command = "java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base update $filePath $fileName";
+        echo $command;
+        $result = exec($command);
         return $result != "Not ok";
     }
 
     private function synchronizeVoice($fileName, $action) {
-        $filePath = 'uploads/voices/'.$fileName;
-        $result = exec("java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base $action $filePath $fileName");
+        $filePath = 'uploads/voices/' . $fileName;
+        $result = exec("java -jar jar/VbeeController.jar " . str_replace(":", " ", $this->ip_address) . " $this->username $this->password $this->dir_base update $filePath $fileName");
         return $result != "Not ok";
     }
 

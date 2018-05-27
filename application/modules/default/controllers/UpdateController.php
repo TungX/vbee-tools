@@ -23,8 +23,9 @@ class UpdateController extends Amobi_Controller_Action {
         $this->_helper->layout()->disableLayout();
         $nameFile = $_FILES['name']['name'];
         echo $_FILES['name']['tmp_name'] . '<br>';
-        move_uploaded_file($_FILES['name']['tmp_name'], "uploads/softwares/" . $nameFile);
-        $this->_model->save(array('name' => $nameFile));
+        if (move_uploaded_file($_FILES['name']['tmp_name'], "uploads/softwares/" . $nameFile)) {
+            $this->_model->save(array('name' => $nameFile));
+        }
         $this->_helper->redirector('index', 'update', 'default', array());
     }
 
@@ -32,9 +33,10 @@ class UpdateController extends Amobi_Controller_Action {
         $this->_helper->layout()->disableLayout();
         $nameFile = $_FILES['name']['name'];
         echo $_FILES['name']['tmp_name'] . '<br>';
-        move_uploaded_file($_FILES['name']['tmp_name'], "uploads/softwares/" . $nameFile);
         $id = $this->_arrParam['id'];
-        $this->_model->save(array('id' => $id, 'name' => $nameFile));
+        if (move_uploaded_file($_FILES['name']['tmp_name'], "uploads/softwares/" . $nameFile)) {
+            $this->_model->save(array('id' => $id, 'name' => $nameFile));
+        }
         $this->_helper->redirector('index', 'update', 'default', array());
     }
 
@@ -71,11 +73,12 @@ class UpdateController extends Amobi_Controller_Action {
 
     public function synchronizeAction() {
         $this->_helper->layout()->disableLayout();
+        $id = $this->_arrParam['id'];
         Zend_Loader::loadClass('Model_Server');
         $serverModel = new Model_Server();
         Zend_Loader::loadClass('Model_Software');
         $softwareModel = new Model_Software();
-        $softwares = $softwareModel->fetchAll();
+        $softwares = $softwareModel->find($id);
         $servers = $serverModel->fetchWithSynServer('software');
         $restart = $this->_arrParam['restart'];
         foreach ($servers as $server) {

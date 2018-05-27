@@ -1,6 +1,7 @@
 <tr id="update-<?php echo $this->software['id']; ?>" class="<?php echo $this->class; ?>">
     <td class="order"><?php echo $this->order; ?></td>
+    <td><input type="checkbox" class="synchronize_selected" name="voice_update" value="<?php echo $this->software['id']; ?>"></td>
     <td class="id"><?php echo $this->software['id']; ?></td>
     <td class="name title"><?php echo $this->software['name']; ?></td>
-    <td><a href="#edit" class="edit_object">Edit</a> <a href="#remove" class="remove_object">Remove</a></td>
+    <td><a href="#edit" class="edit_object">Edit</a> <a href="#remove" data-target="#remove" class="remove_object">Remove</a></td>
 </tr>

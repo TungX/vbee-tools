@@ -25,11 +25,12 @@ $(document).ready(function () {
 
     $('#modal_info').on('hidden.bs.modal', function () {
         $('#modal_info .modal-body input').css('border-color', '');
+        $('#modal_info .non-required').removeClass('non-required');
         $('#modal_info .modal-body input').prop('checked', false);
         $('.save_object').prop('disabled', false);
         $('.message-required').remove();
         $('#modal_info .modal-title').html('');
-        $('#modal_info .modal-body input').val('');
+        $('#modal_info .modal-body input:not([type=hidden])').val('');
         $('#modal_info .error-notifice').html('');
     });
 });
@@ -41,6 +42,7 @@ function init() {
     catchEventRemove();
     catchEventSaveObject();
     catchEventDeleteObject();
+    catchEventSelectUpdate();
     if (typeof loadEventOfServer != 'undefined') {
         loadEventOfServer();
         loadButtonControl();
@@ -50,6 +52,22 @@ function init() {
         catchEventRequestSynchronize();
     }
 
+    if (typeof loadEventSubtitle != 'undefined') {
+        loadEventSubtitle();
+    }
+
+}
+
+function catchEventSelectUpdate() {
+    $('.synchronize_selected').off("click").on('click', function () {
+        console.log('update');
+        if (this.checked) {
+            $('.synchronize_selected').each(function () {
+                $(this).prop('checked', false);
+            });
+            $(this).prop('checked', true);
+        }
+    });
 }
 
 function catchEventEdit() {
@@ -58,7 +76,7 @@ function catchEventEdit() {
         var $row = $(this).parents('tr');
         $('#modal_info .modal-body input').each(function () {
             if ($(this).attr('type') !== 'file') {
-                $(this).val($row.find('td.' + $(this).attr('name')).text());
+                $(this).val($row.find('td.' + $(this).attr('name')).text().trim());
             }
         });
         $('#modal_info .modal-title').html('Sửa thông tin ' + $row.find('td.title').text());
@@ -76,7 +94,8 @@ function catchEventAdd() {
 }
 
 function catchEventRemove() {
-    $('.remove_object').on('click', function () {
+    $('.remove_object').on('click', function (event) {
+        event.preventDefault();
         var $row = $(this).parents('tr');
         $('#modal_delete .modal-body').html('Bạn chắc chắn muốn xóa ' + $row.find('td.title').text() + '?');
         $('#modal_delete').data('id', $row.find('td.id').text());
@@ -101,7 +120,7 @@ function catchEventSaveObject() {
                 value = +$(this).is(':checked');
             }
             $data[$(this).attr('name')] = value;
-            if ($(this).is(':visible') && value.length === 0) {
+            if ($(this).is(':visible') && value.length === 0 && !($(this).hasClass('non-required') || $(this).is(":disabled"))) {
                 $(this).css('border-color', 'red');
                 $(this).parent().append('<p class="message-required">*This field is required!</p>');
                 $('.save_object').prop('disabled', true);
@@ -118,34 +137,38 @@ function catchEventSaveObject() {
             $('#modal_info form').submit();
         }
         $('.save_object').prop('disabled', true);
+        var url = "/" + $('#modal_info').data('controller-name') + "/" + $action;
         $.ajax({
-            url: $('#modal_info').data('controller-name') + '/' + $action,
+            url: url,
             data: $data,
-            method: 'POST'
-        }).done(function (data) {
-            console.log(data);
-            var result = JSON.parse(data);
-            if (result.status === 2) {
-                $('#modal_info .error-notifice').html(result.message);
-                catchEventChangeField();
-                return;
-            }
-            if ($action === 'create') {
-                $row = $('.info-pattern').clone().removeClass('info-pattern');
-                $row.attr('id', $('#modal_info').data('controller-name') + '-' + result.id);
-                $('#modal_info .modal-body input').each(function () {
-                    $row.find('.' + $(this).attr('name')).html($(this).val());
-                });
-                $row.find('.id').html(result.id);
-                $row.find('.order').html(+$row.find('.order').text() + 1);
-                $('tbody').append($row);
-                catchEventEdit();
-                catchEventRemove();
-            } else if ($action === 'update') {
-                var $row = $('#' + $('#modal_info').data('controller-name') + '-' + $('#modal_info .modal-body input[name=id]').val());
-                $('#modal_info .modal-body input').each(function () {
-                    $row.find('.' + $(this).attr('name')).html($(this).val());
-                });
+            method: 'GET'
+        }).done(function (respone) {
+            console.log(respone);
+            try {
+                var result = JSON.parse(respone);
+                if (result.status === 2) {
+                    $('#modal_info .error-notifice').html(result.message);
+                    catchEventChangeField();
+                    return;
+                }
+                if ($action === 'create') {
+                    $row = $('.info-pattern').clone().removeClass('info-pattern');
+                    $row.attr('id', $('#modal_info').data('controller-name') + '-' + result.id);
+                    $('#modal_info .modal-body input').each(function () {
+                        $row.find('.' + $(this).attr('name')).html($(this).val());
+                    });
+                    $row.find('.id').html(result.id);
+                    $row.find('.order').html(+$row.find('.order').text() + 1);
+                    $('tbody').append($row);
+                    catchEventEdit();
+                    catchEventRemove();
+                } else if ($action === 'update') {
+                    var $row = $('#' + $('#modal_info').data('controller-name') + '-' + $('#modal_info .modal-body input[name=id]').val());
+                    $('#modal_info .modal-body input').each(function () {
+                        $row.find('.' + $(this).attr('name')).html($(this).val());
+                    });
+                }
+            } catch (e) {
             }
             $('#modal_info').modal('hide');
         });
@@ -186,19 +209,22 @@ function catchEventSearch() {
             method: 'POST'
         }).done(function (data) {
             var result = JSON.parse(data);
-            if (result.length > 0) {
-                $.each(result, function (index) {
-                    var row = $('.info-pattern').clone().removeClass('info-pattern');
-                    $.each(this, function (key, value) {
-                        row.find('td.' + key).html(value);
+            try {
+                if (result.length > 0) {
+                    $.each(result, function (index) {
+                        var row = $('.info-pattern').clone().removeClass('info-pattern');
+                        $.each(this, function (key, value) {
+                            row.find('td.' + key).html(value);
+                        });
+                        row.find('td.order').html(index + 1);
+                        row.attr('id', row.attr('id') + this.id);
+                        $('tbody').append(row);
                     });
-                    row.find('td.order').html(index + 1);
-                    row.attr('id', row.attr('id') + this.id);
-                    $('tbody').append(row);
-                });
-                init();
-            } else {
-                $('#search-notify').html('<h1>Không có kết quả phù hợp!</h1>');
+                    init();
+                } else {
+                    $('#search-notify').html('<h1>Không có kết quả phù hợp!</h1>');
+                }
+            } catch (e) {
             }
 
             $('#search').prop('disabled', false);

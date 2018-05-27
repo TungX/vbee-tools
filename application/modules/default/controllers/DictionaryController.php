@@ -16,7 +16,7 @@ class DictionaryController extends Amobi_Controller_Action {
     public function predisPatch() {
         parent::predisPatch();
         $this->view->errors = array();
-        $this->_type = +($this->_arrParam["type"] == "loan");
+        $this->_type = +(isset($this->_arrParam["type"]) && $this->_arrParam["type"] == "loan");
         $this->view->headScript()->appendFile('/templates/default/js/dictionary_page.js', 'text/javascript');
         $type_name = array('abbrev', 'loan');
         $this->view->type_name = $type_name[$this->_type];
@@ -33,11 +33,13 @@ class DictionaryController extends Amobi_Controller_Action {
         $param = $this->_arrParam;
         if (array_key_exists("spelling", $param) && $param['type'] == 1) {
             if (!$this->checkSpelling($param['spelling'])) {
-                return $this->view->result = json_encode(array('status' => 2, 'message' => "Cách đọc khai sao sai, bạn có thể tham khảo ở <a href='/'>đây</a>"));
+                return $this->view->result = json_encode(array('status' => 2, 'message' => "Cách đọc khai sao sai, bạn có thể tham khảo ở <a href='/dictionary/phonetics' target='_blank'>đây</a>"));
             }
         }
+	
         $param['id'] = null;
         $id = $this->_model->save($param);
+	
         if ($id == -1) {
             $this->view->result = json_encode(array('status' => 2, 'message' => 'Lỗi trong quá trình lưu'));
         } else {
@@ -50,7 +52,7 @@ class DictionaryController extends Amobi_Controller_Action {
         $param = $this->_arrParam;
         if (array_key_exists("spelling", $param) && $param['type'] == 1) {
             if (!$this->checkSpelling($param['spelling'])) {
-                return $this->view->result = json_encode(array('status' => 2, 'message' => "Cách đọc khai sao sai, bạn có thể tham khảo ở <a href='/'>đây</a>"));
+                return $this->view->result = json_encode(array('status' => 2, 'message' => "Cách đọc khai sao sai, bạn có thể tham khảo ở <a href='/dictionary/phonetics' target='_blank'>đây</a>"));
             }
         }
         $id = $this->_model->save($param);
@@ -59,6 +61,12 @@ class DictionaryController extends Amobi_Controller_Action {
         } else {
             $this->view->result = json_encode(array('status' => 1, 'id' => $id));
         }
+    }
+    
+    public function phoneticsAction(){
+        Zend_Loader::loadClass('Model_G2Phonetic');
+        $g2pModel = new Model_G2Phonetic();
+        $this->view->phonetics = $g2pModel->fetchAll();
     }
 
     public function destroyAction() {
@@ -103,6 +111,7 @@ class DictionaryController extends Amobi_Controller_Action {
                 if (empty($word)) {
                     continue;
                 }
+		
                 $id = $g2pModel->save(array('word' => $word, 'phonetic' => $phonetic));
                 if ($id < 1) {
                     echo $word . '<br>';
@@ -161,7 +170,7 @@ class DictionaryController extends Amobi_Controller_Action {
         if (($file = fopen("g2p_loan_phonetic.txt", "r"))) {
             while (!feof($file)) {
                 $line = fgets($file);
-                $elements = split(" ", $line);
+                $elements = explode(" ", $line);
                 $phonetic_arr = preg_split("/[^a-zA-Z0-9_]+/", $elements[1]);
                 $dictionary_phone[$elements[0]] = implode(" ", $phonetic_arr);
             }
@@ -180,7 +189,6 @@ class DictionaryController extends Amobi_Controller_Action {
             $g2pModel = new Model_G2Phonetic();
             foreach ($dictionary as $line) {
                 $tline = $this->$function_make_line($line['word'], $line['spelling'], $g2pModel);
-                echo $tline;
                 fwrite($file, $tline);
             }
             fclose($file);

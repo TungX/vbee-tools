@@ -10,7 +10,7 @@
                     <input type="hidden" name="id">
                     <?php foreach ($this->fields as $lable => $name): ?>
                         <?php if (is_array($name)): ?>
-                            <?php echo $this->partial('layout/' . $name['type'] . '.phtml', array('name' => $lable, 'option' => $name['option'], 'class'=>$name['class'])) ?>
+                            <?php echo $this->partial('layout/' . $name['type'] . '.phtml', array('name' => $lable, 'option' => $name['option'], 'class' => key_exists('class', $name) ? $name['class'] : '', 'default' => key_exists('default', $name) ? $name['default'] : '')) ?>
                         <?php elseif (!empty($name)): ?>
                             <div class="form-group">
                                 <label for="input<?php echo $name; ?>" class="col-sm-2 control-label"><?php echo $lable; ?></label>
